@@ -1,18 +1,73 @@
+function prepLinksBased(){//new
+//For every anchor, create a class using n-based counting system
+var value = 0;     
+var strBuilder = "";       
+    
+$.each($('a[href]'), function(){
+    if(isElementInViewport(this)){
+        if (!$(this).text().trim().length) {
+            console.debug("failed on:"  );
+        } 
+        else{
+          
+             strBuilder = convertNumberToBaseWithoutZero(5,value).toString();
+             
+            //create class using generated number
+            // addClassToAnchors(value,strBuilder);
+            // addTipToAnchors(value,strBuilder);      
+            addClassToAnchorsE(this,strBuilder);
+            addTipToAnchorsE(this,strBuilder);                
+            value+=1;
+        }
+    }
+
+});
+}
+
+function convertNumberToBaseWithoutZero(newBase,value){//tested
+    var digitPosition = 1;
+    var convertedNumber = 0;
+    var remainder = 0;
+     
+    if (value ==0){
+        return 1;           
+    }   
+    while(value!=0){
+        remainder  =  value%newBase;//make sure this mods################
+        remainder++;                
+        value = Math.floor(value/newBase);
+        convertedNumber += remainder*(digitPosition);
+        digitPosition*=10;          
+    }   
+        
+    return convertedNumber;
+}
+
 function addTipToAnchors(i,strBuilder){
-    var inputOpentip = new Opentip($("a:eq("+i+")"), { showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0 });
+    var inputOpentip = new Opentip($("a:eq("+i+")"), { showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0,removeElementsOnHide:true });
         inputOpentip.setContent(strBuilder);
 }
     
 function addClassToAnchors(i,strBuilder){
-    $("a:eq("+i+")").addClass(strBuilder);    
+    $("a:eq("+i+")").addClass(strBuilder);
+
+}
+
+function addTipToAnchorsE(el,strBuilder){
+    var inputOpentip = new Opentip($(el), { showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0,removeElementsOnHide:true });
+        inputOpentip.setContent(strBuilder);
+}
+    
+function addClassToAnchorsE(el,strBuilder){
+    $(el).addClass(strBuilder);
+
 }
     
        
     
 function highlightCharactersInTip(typed){
  //  alert(typed);
-    for(var i = 0; i < Opentip.tips.length; i ++) { 
-        
+    for(var i = 1; i < Opentip.tips.length; i ++) {
         if(typed==$("a:eq("+i+")").attr("class").substring(0,typed.length)){// partial match
                 var sequence = $("a:eq("+i+")").attr("class");
         Opentip.tips[i].setContent("<em style='color:green'>"+sequence.substring(0,typed.length)+"</em>"+sequence.substring(typed.length));
@@ -33,232 +88,8 @@ function highlightCharactersInTip(typed){
 function linkkeyClick(anchor){
     if($("."+anchor)[0]!=null){$("."+anchor)[0].click();}
 }    
-    
 
-    
-function prepLinks(){
-//For every anchor, create a class using n-based counting system
-    
-    var numLinks = $("a").length;
-   // variable needed for quaternary
-    var d=0.0;
-    var di = 0;
-    var dr = 0;
-    
-    var c=0.0;
-    var ci = 0;
-    var cr = 0;
-    
-    var b=0.0;
-    var bi = 0;
-    var br = 0;
-    
-    var a=0.0;
-    var ai = 0;
-    var ar = 0;
-    
-
-
-    var strBuilder = "";
-    for(i = 0;i< numLinks;i++){
-        //calculate quaternary for each link
-        d= i/4;
-        di =  Math.floor(d);
-        dr = (d- di)*4+1;
-        if (di==0){
-        ci=-1;bi=-1;ai=-1;        
-        }else{
-            c= di/4;
-            ci =  Math.floor(c);
-            cr = (c- ci)*4+1;
-            if(ci==0){
-                bi=-1;ai=-1;        
-            }else{
-                b= ci/4;
-                bi =  Math.floor(b);
-                br = (b- bi)*4+1;
-                if(bi==0){
-                ai=-1;
-                }else{
-                    a= bi/4;
-                    ai =  Math.floor(a);
-                    ar = (a- ai)*4+1;
-        
-                }
-        
-            }   
-    }
-    
-    if (ai!=-1){
-     strBuilder=strBuilder+ar.toString();
-    }
-    if (bi!=-1){
-     strBuilder=strBuilder+br.toString();
-    }
-    if (ci!=-1){
-     strBuilder=strBuilder+cr.toString();
-    }
-    strBuilder=strBuilder+dr.toString();
-         
-        //create class using generated number
-        addClassToAnchors(i,strBuilder);
-        addTipToAnchors(i,strBuilder);        
-         strBuilder="";
-    }    
-}    
-  
-function protoPrepLinks(){
-//For every anchor, create a class using n-based counting system
-    
-    
-    var i = 0;
-   // variable needed for quaternary
-    var d=0.0;
-    var di = 0;
-    var dr = 0;
-    
-    var c=0.0;
-    var ci = 0;
-    var cr = 0;
-    
-    var b=0.0;
-    var bi = 0;
-    var br = 0;
-    
-    var a=0.0;
-    var ai = 0;
-    var ar = 0;
-    
-$.each($('a[href]'), function(){
-    var strBuilder = ""; 
-       
-        if (!$(this).text().trim().length) {
-        console.debug("fail");
-    } else{
-    
-    console.debug(this.text);
-
-        //calculate quaternary for each link
-        d= i/4;
-        di =  Math.floor(d);
-        dr = (d- di)*4+1;
-        if (di==0){
-        ci=-1;bi=-1;ai=-1;        
-        }else{
-            c= di/4;
-            ci =  Math.floor(c);
-            cr = (c- ci)*4+1;
-            if(ci==0){
-                bi=-1;ai=-1;        
-            }else{
-                b= ci/4;
-                bi =  Math.floor(b);
-                br = (b- bi)*4+1;
-                if(bi==0){
-                ai=-1;
-                }else{
-                    a= bi/4;
-                    ai =  Math.floor(a);
-                    ar = (a- ai)*4+1;
-        
-                }
-        
-            }   
-    }
-    
-    if (ai!=-1){
-     strBuilder=strBuilder+ar.toString();
-    }
-    if (bi!=-1){
-     strBuilder=strBuilder+br.toString();
-    }
-    if (ci!=-1){
-     strBuilder=strBuilder+cr.toString();
-    }
-    strBuilder=strBuilder+dr.toString();
-         
-        //create class using generated number
-        addClassToAnchors(i,strBuilder);
-        addTipToAnchors(i,strBuilder);        
-         strBuilder="";
-         i=i+1;
-}});
-    
-    
-        
-}        
-    
-function resetTips(){
-    
-    var numLinks = $("a").length;
-   // variable needed for quaternary
-    var d=0.0;
-    var di = 0;
-    var dr = 0;
-    
-    var c=0.0;
-    var ci = 0;
-    var cr = 0;
-    
-    var b=0.0;
-    var bi = 0;
-    var br = 0;
-    
-    var a=0.0;
-    var ai = 0;
-    var ar = 0;
-    
-    var strBuilder = "";
-    //modify to take into account max possible numbers available 3base=40 4base...
-    for(i = 0;i< numLinks;i++){
-        //calculate quaternary for each link
-        d= i/4;
-        di =  Math.floor(d);
-        dr = (d- di)*4+1;
-        if (di==0){
-        ci=-1;bi=-1;ai=-1;        
-        }else{
-            c= di/4;
-            ci =  Math.floor(c);
-            cr = (c- ci)*4+1;
-            if(ci==0){
-                bi=-1;ai=-1;        
-            }else{
-                b= ci/4;
-                bi =  Math.floor(b);
-                br = (b- bi)*4+1;
-                if(bi==0){
-                ai=-1;
-                }else{
-                    a= bi/4;
-                    ai =  Math.floor(a);
-                    ar = (a- ai)*4+1;
-        
-                }
-        
-            }   
-    }
-    
-	    if (ai!=-1){
-	     strBuilder=strBuilder+ar.toString();
-	    }
-	    if (bi!=-1){
-	     strBuilder=strBuilder+br.toString();
-	    }
-	    if (ci!=-1){
-	     strBuilder=strBuilder+cr.toString();
-	    }
-	    strBuilder=strBuilder+dr.toString();
-	         
-	    //create class using generated number
-	    Opentip.tips[i].setContent(strBuilder);	               
-	    strBuilder="";
-    }    
-}        
-    
-
-    
- function translateKeyboardToValue(key){
+function translateKeyboardToValue(key){
     switch(key){//modify to accept configuration input
     
             case 49:
@@ -272,13 +103,21 @@ function resetTips(){
             
             case 52:
             return 4;
+            case 53:
+            return 5;
             default:
             return "";    
     }    
 }      
 
+
+
 function isElementInViewport (el) {
     //http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
+    
+    // if (typeof el === "undefined"){
+    //     return false;
+    // }
     if (typeof jQuery === "function" && el instanceof jQuery) {
         el = el[0];
     }
@@ -299,48 +138,56 @@ $(document).ready(function(){
     var input ="";
     var areTipsVisible = false;
     var isActivated = false;
-    var aValue=9;    
     //Event handlers
     
-    //Is activation key pressed
+    //Is activation key PRESSED
     $("body").keydown(function(event){ 
 
     //set up new numbers for viewport   
         if(event.which==192){// Set to ~ Key          
-            
             if (!areTipsVisible){
-                for(var i = 0; i < Opentip.tips.length; i ++) {
-                    if(isElementInViewport($("a:eq("+i+")"))){
-                    Opentip.tips[i].show();}
+                prepLinksBased();
+                for(var i = 0; i < Opentip.tips.length; i ++) {//go tru opentip elements who are associated with an elem
+                    Opentip.tips[i].show();
                 }
+
+            
+            areTipsVisible=true;
             }
 
-            areTipsVisible=true;
         }         
     });
-    //Is activation key depressed
+    //Is activation key RELEASED
     $("body").keyup(function(event){
-        $("#divtip").text(event.which);
+        //$("#divtip").text(event.which);
+   console.debug(Opentip.tips.length);
+        if(event.which==192){
+            areTipsVisible=false;         
 
-        if(event.which==192){         
-       for(var i = 0; i < Opentip.tips.length; i ++) {Opentip.tips[i].hide();}       
-        areTipsVisible=false;       
-            linkkeyClick(input);
-        input="";
-            //resetTips();
-        }      
+            //console.debug(Opentip.tips[0]);
+            if(input!=""){
+                linkkeyClick(input);            
+            }     
+            for(var i = 0; i < Opentip.tips.length; i ++) {Opentip.tips[i].hide();}  
+            while (Opentip.tips.length > 0) {Opentip.tips.shift().deactivate();}
+
+            input="";
+            
+            //  prepLinksBased();  
+        }    console.debug(Opentip.tips.length);     
     });
     
     // are valid keys being pressed
     $("body").keypress(function(event){
     if(areTipsVisible==true && event.which!=192 && event.which!=96){        
-        input+=translateKeyboardToValue(event.which);
-        //TODO: highlight keypresses
+        input+=translateKeyboardToValue(event.which);        
             highlightCharactersInTip(input);
     }      
     });
-   
-   
-                protoPrepLinks(); 
+          // prepLinksBased();
+
+
+
+
 
 });
