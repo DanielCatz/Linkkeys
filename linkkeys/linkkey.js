@@ -11,7 +11,7 @@ $.each($('a[href]'), function(){
         else{
           
              strBuilder = convertNumberToBaseWithoutZero(5,value).toString();
-             
+             console.debug("Link:"+$(this).text().trim()+"\nLinkkey:" +strBuilder);
             //create class using generated number
             // addClassToAnchors(value,strBuilder);
             // addTipToAnchors(value,strBuilder);      
@@ -59,7 +59,9 @@ function addTipToAnchorsE(el,strBuilder){
 }
     
 function addClassToAnchorsE(el,strBuilder){
-    $(el).addClass(strBuilder);
+   // $(el).addClass(strBuilder);
+    $(el).attr('linkkey',strBuilder);
+
 
 }
     
@@ -68,14 +70,14 @@ function addClassToAnchorsE(el,strBuilder){
 function highlightCharactersInTip(typed){
  //  alert(typed);
     for(var i = 1; i < Opentip.tips.length; i ++) {
-        if(typed==$("a:eq("+i+")").attr("class").substring(0,typed.length)){// partial match
-                var sequence = $("a:eq("+i+")").attr("class");
+        if(typed==$("a:eq("+i+")").attr("linkkey").substring(0,typed.length)){// partial match
+                var sequence = $("a:eq("+i+")").attr("linkkey");
         Opentip.tips[i].setContent("<em style='color:green'>"+sequence.substring(0,typed.length)+"</em>"+sequence.substring(typed.length));
             }else{//eliminated
             Opentip.tips[i].hide();
             }
 //matched
-        if($("a:eq("+i+")").attr("class")==typed){
+        if($("a:eq("+i+")").attr("linkkey")==typed){
             Opentip.tips[i].setContent("∞");
             
             }
@@ -84,10 +86,39 @@ function highlightCharactersInTip(typed){
 
 
 }
+
+function highlightCharactersInTipE(typed){
+    var el;
+    var i = 0;
+   $.each($('a[linkkey]'), function(){
+    if(isElementInViewport(this)){
+ if(typed==$(this).attr("linkkey").substring(0,typed.length)){// partial match
+                var sequence = $(this).attr("linkkey");
+                console.debug(sequence);
+
+        Opentip.tips[i].setContent("<em style='color:green'>"+sequence.substring(0,typed.length)+"</em>"+sequence.substring(typed.length));
+            }else{//eliminated
+            Opentip.tips[i].hide();
+            }
+        //matched
+        if($(this).attr("linkkey")==typed){
+            Opentip.tips[i].setContent("∞");
+            el = $(this);
+            }
+            i++;
+    }});
+
+   return el;
+}
     
 function linkkeyClick(anchor){
     if($("."+anchor)[0]!=null){$("."+anchor)[0].click();}
-}    
+}   
+function linkkeyClickE(el){
+    if($(el)[0]!=null){
+        $(el)[0].click();
+    }
+}   
 
 function translateKeyboardToValue(key){
     switch(key){//modify to accept configuration input
@@ -135,6 +166,7 @@ function isElementInViewport (el) {
 //Main    
 $(document).ready(function(){
    //stuff
+    var el;
     var input ="";
     var areTipsVisible = false;
     var isActivated = false;
@@ -160,20 +192,18 @@ $(document).ready(function(){
     //Is activation key RELEASED
     $("body").keyup(function(event){
         //$("#divtip").text(event.which);
-   console.debug(Opentip.tips.length);
+
         if(event.which==192){
             areTipsVisible=false;         
 
-            //console.debug(Opentip.tips[0]);
             if(input!=""){
-                linkkeyClick(input);            
+                linkkeyClickE(el);            
             }     
             for(var i = 0; i < Opentip.tips.length; i ++) {Opentip.tips[i].hide();}  
             while (Opentip.tips.length > 0) {Opentip.tips.shift().deactivate();}
 
             input="";
             
-            //  prepLinksBased();  
         }    console.debug(Opentip.tips.length);     
     });
     
@@ -181,7 +211,7 @@ $(document).ready(function(){
     $("body").keypress(function(event){
     if(areTipsVisible==true && event.which!=192 && event.which!=96){        
         input+=translateKeyboardToValue(event.which);        
-            highlightCharactersInTip(input);
+            el = highlightCharactersInTipE(input);
     }      
     });
           // prepLinksBased();
