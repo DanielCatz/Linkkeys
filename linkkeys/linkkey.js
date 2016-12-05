@@ -1,27 +1,43 @@
+var linkkey_text_color;
+var linkkey_border_color;
+var linkkey_body_color;
+var linkkey_highlight_color;
 function prepLinksBased(){//new
 //For every anchor, create a class using n-based counting system
 var value = 0;     
 var strBuilder = "";       
-    
+var count=0;    
 $.each($('a[href]'), function(){
+
+    count++;
     if(isElementInViewport(this)){
         if (!$(this).text().trim().length) {
             console.debug("failed on:"  );
         } 
         else{
-          
-             strBuilder = convertNumberToBaseWithoutZero(5,value).toString();
-             console.debug("Link:"+$(this).text().trim()+"\nLinkkey:" +strBuilder);
+        var rect = this.getBoundingClientRect();
+          if (rect.top==0&& rect.right==0&& rect.bottom==0 && rect.left==0){
+                console.debug("Link:"+$(this).text().trim()+"\nLinkkey:" +"NONE"+"\nValue: " +value);
+                console.log(rect.top, rect.right, rect.bottom, rect.left);
+            }
+            else{
+                var visible  = $(this).is(":visible");
+            strBuilder = convertNumberToBaseWithoutZero(5,value).toString();
+            console.debug("Link:"+$(this).text().trim()+"\nLinkkey:" +strBuilder+"\nValue: " +value +"\n IsVisible: " +visible);
+                console.log(rect.top, rect.right, rect.bottom, rect.left);
+             
             //create class using generated number
-            // addClassToAnchors(value,strBuilder);
-            // addTipToAnchors(value,strBuilder);      
             addClassToAnchorsE(this,strBuilder);
             addTipToAnchorsE(this,strBuilder);                
+            Opentip.tips[value].show();
             value+=1;
+            }
+
         }
     }
 
 });
+console.debug('number of links scanned: '+count+"\nNumber of Linkkeys on screen: " + value);
 }
 
 function convertNumberToBaseWithoutZero(newBase,value){//tested
@@ -43,19 +59,18 @@ function convertNumberToBaseWithoutZero(newBase,value){//tested
     return convertedNumber;
 }
 
-function addTipToAnchors(i,strBuilder){
-    var inputOpentip = new Opentip($("a:eq("+i+")"), { showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0,removeElementsOnHide:true });
-        inputOpentip.setContent(strBuilder);
-}
-    
-function addClassToAnchors(i,strBuilder){
-    $("a:eq("+i+")").addClass(strBuilder);
 
-}
+
 
 function addTipToAnchorsE(el,strBuilder){
-    var inputOpentip = new Opentip($(el), { showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0,removeElementsOnHide:true });
-        inputOpentip.setContent(strBuilder);
+    // var inputOpentip = new Opentip($(el), {tipJoint: "top left", borderColor: "red",stemLength: 15, stemBase: 5, background: [[ 0.99, "white" ], [ 1, "grey" ]] ,showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0,removeElementsOnHide:true });
+    var inputOpentip = new Opentip($(el), {tipJoint: "top left", 
+            borderColor: linkkey_border_color ,//stemLength: 15, stemBase: 5, 
+            background: [ [ 0, "white" ], [ 1, linkkey_body_color ] ],showOn: null, borderRadius:10,
+            style: 'glass',target:true,
+            showEffectDuration:0.1,hideEffectDuration:1.0, removeElementsOnHide:true });
+
+        inputOpentip.setContent("<span style='color:"+linkkey_text_color+"'>"+strBuilder+"</span>");         
 }
     
 function addClassToAnchorsE(el,strBuilder){
@@ -65,55 +80,33 @@ function addClassToAnchorsE(el,strBuilder){
 
 }
     
-       
-    
-function highlightCharactersInTip(typed){
- //  alert(typed);
-    for(var i = 1; i < Opentip.tips.length; i ++) {
-        if(typed==$("a:eq("+i+")").attr("linkkey").substring(0,typed.length)){// partial match
-                var sequence = $("a:eq("+i+")").attr("linkkey");
-        Opentip.tips[i].setContent("<em style='color:green'>"+sequence.substring(0,typed.length)+"</em>"+sequence.substring(typed.length));
-            }else{//eliminated
-            Opentip.tips[i].hide();
-            }
-//matched
-        if($("a:eq("+i+")").attr("linkkey")==typed){
-            Opentip.tips[i].setContent("∞");
-            
-            }
-        
-  }
-
-
-}
-
 function highlightCharactersInTipE(typed){
     var el;
     var i = 0;
    $.each($('a[linkkey]'), function(){
     if(isElementInViewport(this)){
- if(typed==$(this).attr("linkkey").substring(0,typed.length)){// partial match
-                var sequence = $(this).attr("linkkey");
-                console.debug(sequence);
+        if(typed==$(this).attr("linkkey").substring(0,typed.length)){// partial match
+                        var sequence = $(this).attr("linkkey");
+                        console.debug(sequence);
 
-        Opentip.tips[i].setContent("<em style='color:green'>"+sequence.substring(0,typed.length)+"</em>"+sequence.substring(typed.length));
-            }else{//eliminated
-            Opentip.tips[i].hide();
-            }
-        //matched
-        if($(this).attr("linkkey")==typed){
-            Opentip.tips[i].setContent("∞");
-            el = $(this);
-            }
-            i++;
+                Opentip.tips[i].setContent("<em style='color:"+linkkey_highlight_color+"'>"+sequence.substring(0,typed.length)+"</em>"+"<span style='color:"+linkkey_text_color+"'>"+sequence.substring(typed.length)+"</span>");
+                    }else{//eliminated
+                    Opentip.tips[i].hide();
+                    }
+                //matched
+                if($(this).attr("linkkey")==typed){
+                    //simulate mouse over todo   
+                    var linkText ="<span style='color:"+linkkey_text_color+"'>"+ $(this).text().trim() +"</span>";               
+                    Opentip.tips[i].setContent(linkText);
+                    el = $(this);
+                }
+        i++;
     }});
 
    return el;
 }
     
-function linkkeyClick(anchor){
-    if($("."+anchor)[0]!=null){$("."+anchor)[0].click();}
-}   
+
 function linkkeyClickE(el){
     if($(el)[0]!=null){
         $(el)[0].click();
@@ -163,6 +156,23 @@ function isElementInViewport (el) {
     );
 }
     
+function loadUserSettings(){
+chrome.storage.sync.get({
+    linkkeyTextColor:"rgba(0, 0, 0, 1)",
+linkkeyBorderColor:"rgba(0, 0, 0, 0.5)",
+linkkeyHighlightColor:"rgba(50,197,49, 0.99)",
+linkkeyBodyColor:"rgba(49, 124, 194, 0.58)"
+  }, function(items) {
+    
+    linkkey_text_color = items.linkkeyTextColor;
+linkkey_border_color= items.linkkeyBorderColor;
+linkkey_body_color= items.linkkeyBodyColor;
+linkkey_highlight_color= items.linkkeyHighlightColor;
+  });
+
+}
+
+
 //Main    
 $(document).ready(function(){
    //stuff
@@ -170,19 +180,21 @@ $(document).ready(function(){
     var input ="";
     var areTipsVisible = false;
     var isActivated = false;
+    Opentip.lastZIndex =100000;
+    loadUserSettings();
     //Event handlers
     
     //Is activation key PRESSED
     $("body").keydown(function(event){ 
 
     //set up new numbers for viewport   
-        if(event.which==192){// Set to ~ Key          
+        if(event.which==192){// Set to ~ Key 
             if (!areTipsVisible){
+                console.debug("Linkkey activated");         
                 prepLinksBased();
-                for(var i = 0; i < Opentip.tips.length; i ++) {//go tru opentip elements who are associated with an elem
-                    Opentip.tips[i].show();
-                }
-
+               // for(var i = 0; i < Opentip.tips.length; i++) {//go tru opentip elements who are associated with an elem
+                 //   Opentip.tips[i].show();
+                //}
             
             areTipsVisible=true;
             }
@@ -191,11 +203,10 @@ $(document).ready(function(){
     });
     //Is activation key RELEASED
     $("body").keyup(function(event){
-        //$("#divtip").text(event.which);
-
+        
         if(event.which==192){
             areTipsVisible=false;         
-
+   console.debug("Linkkey released"); 
             if(input!=""){
                 linkkeyClickE(el);            
             }     
@@ -204,7 +215,7 @@ $(document).ready(function(){
 
             input="";
             
-        }    console.debug(Opentip.tips.length);     
+        }     
     });
     
     // are valid keys being pressed
@@ -214,7 +225,8 @@ $(document).ready(function(){
             el = highlightCharactersInTipE(input);
     }      
     });
-          // prepLinksBased();
+    
+          
 
 
 
