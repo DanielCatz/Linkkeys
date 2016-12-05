@@ -1,182 +1,120 @@
-function assignTip(i,strBuilder){
-    var inputOpentip = new Opentip($("a:eq("+i+")"), { showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0 });
-        inputOpentip.setContent(strBuilder);
-    }
-    
-    function classify(i,strBuilder){
-    $("a:eq("+i+")").addClass(strBuilder);    
-    }
-    
-       
-    
-function highlight(typed){
- //  alert(typed);
-    for(var i = 0; i < Opentip.tips.length; i ++) { 
-        
-        if(typed==$("a:eq("+i+")").attr("class").substring(0,typed.length)){// partial match
-                var sequence = $("a:eq("+i+")").attr("class");
-        Opentip.tips[i].setContent("<em style='color:green'>"+sequence.substring(0,typed.length)+"</em>"+sequence.substring(typed.length));
-            }else{//eliminated
-            Opentip.tips[i].hide();
+var linkkey_text_color;
+var linkkey_border_color;
+var linkkey_body_color;
+var linkkey_highlight_color;
+function prepLinksBased(){//new
+//For every anchor, create a class using n-based counting system
+var value = 0;     
+var strBuilder = "";       
+var count=0;    
+$.each($('a[href]'), function(){
+
+    count++;
+    if(isElementInViewport(this)){
+        if (!$(this).text().trim().length) {
+            console.debug("failed on:"  );
+        } 
+        else{
+        var rect = this.getBoundingClientRect();
+          if (rect.top==0&& rect.right==0&& rect.bottom==0 && rect.left==0){
+                console.debug("Link:"+$(this).text().trim()+"\nLinkkey:" +"NONE"+"\nValue: " +value);
+                console.log(rect.top, rect.right, rect.bottom, rect.left);
             }
-//matched
-        if($("a:eq("+i+")").attr("class")==typed){
-            Opentip.tips[i].setContent("∞");
-            
+            else{
+                var visible  = $(this).is(":visible");
+            strBuilder = convertNumberToBaseWithoutZero(5,value).toString();
+            console.debug("Link:"+$(this).text().trim()+"\nLinkkey:" +strBuilder+"\nValue: " +value +"\n IsVisible: " +visible);
+                console.log(rect.top, rect.right, rect.bottom, rect.left);
+             
+            //create class using generated number
+            addClassToAnchorsE(this,strBuilder);
+            addTipToAnchorsE(this,strBuilder);                
+            Opentip.tips[value].show();
+            value+=1;
             }
+
+        }
+    }
+
+});
+console.debug('number of links scanned: '+count+"\nNumber of Linkkeys on screen: " + value);
+}
+
+function convertNumberToBaseWithoutZero(newBase,value){//tested
+    var digitPosition = 1;
+    var convertedNumber = 0;
+    var remainder = 0;
+     
+    if (value ==0){
+        return 1;           
+    }   
+    while(value!=0){
+        remainder  =  value%newBase;//make sure this mods################
+        remainder++;                
+        value = Math.floor(value/newBase);
+        convertedNumber += remainder*(digitPosition);
+        digitPosition*=10;          
+    }   
         
-  }
+    return convertedNumber;
+}
+
+
+
+
+function addTipToAnchorsE(el,strBuilder){
+    // var inputOpentip = new Opentip($(el), {tipJoint: "top left", borderColor: "red",stemLength: 15, stemBase: 5, background: [[ 0.99, "white" ], [ 1, "grey" ]] ,showOn: null, style: 'glass',target:true,showEffectDuration:0.1,hideEffectDuration:1.0,removeElementsOnHide:true });
+    var inputOpentip = new Opentip($(el), {tipJoint: "top left", 
+            borderColor: linkkey_border_color ,//stemLength: 15, stemBase: 5, 
+            background: [ [ 0, "white" ], [ 1, linkkey_body_color ] ],showOn: null, borderRadius:10,
+            style: 'glass',target:true,
+            showEffectDuration:0.1,hideEffectDuration:1.0, removeElementsOnHide:true });
+
+        inputOpentip.setContent("<span style='color:"+linkkey_text_color+"'>"+strBuilder+"</span>");         
+}
+    
+function addClassToAnchorsE(el,strBuilder){
+   // $(el).addClass(strBuilder);
+    $(el).attr('linkkey',strBuilder);
 
 
 }
     
-function linkkeyClick(anchor){
-    if($("."+anchor)[0]!=null){$("."+anchor)[0].click();}
-}    
+function highlightCharactersInTipE(typed){
+    var el;
+    var i = 0;
+   $.each($('a[linkkey]'), function(){
+    if(isElementInViewport(this)){
+        if(typed==$(this).attr("linkkey").substring(0,typed.length)){// partial match
+                        var sequence = $(this).attr("linkkey");
+                        console.debug(sequence);
+
+                Opentip.tips[i].setContent("<em style='color:"+linkkey_highlight_color+"'>"+sequence.substring(0,typed.length)+"</em>"+"<span style='color:"+linkkey_text_color+"'>"+sequence.substring(typed.length)+"</span>");
+                    }else{//eliminated
+                    Opentip.tips[i].hide();
+                    }
+                //matched
+                if($(this).attr("linkkey")==typed){
+                    //simulate mouse over todo   
+                    var linkText ="<span style='color:"+linkkey_text_color+"'>"+ $(this).text().trim() +"</span>";               
+                    Opentip.tips[i].setContent(linkText);
+                    el = $(this);
+                }
+        i++;
+    }});
+
+   return el;
+}
     
 
-    
-function prepLinks(){
-    
-    var numLinks = $("a").length;
-   // variable needed for quaternary
-    var d=0.0;
-    var di = 0;
-    var dr = 0;
-    
-    var c=0.0;
-    var ci = 0;
-    var cr = 0;
-    
-    var b=0.0;
-    var bi = 0;
-    var br = 0;
-    
-    var a=0.0;
-    var ai = 0;
-    var ar = 0;
-    
-    var strBuilder = "";
-    for(i = 0;i< numLinks;i++){
-        //calculate quaternary for each link
-        d= i/4;
-        di =  Math.floor(d);
-        dr = (d- di)*4+1;
-        if (di==0){
-        ci=-1;bi=-1;ai=-1;        
-        }else{
-            c= di/4;
-            ci =  Math.floor(c);
-            cr = (c- ci)*4+1;
-            if(ci==0){
-                bi=-1;ai=-1;        
-            }else{
-                b= ci/4;
-                bi =  Math.floor(b);
-                br = (b- bi)*4+1;
-                if(bi==0){
-                ai=-1;
-                }else{
-                    a= bi/4;
-                    ai =  Math.floor(a);
-                    ar = (a- ai)*4+1;
-        
-                }
-        
-            }   
+function linkkeyClickE(el){
+    if($(el)[0]!=null){
+        $(el)[0].click();
     }
-    
-    if (ai!=-1){
-     strBuilder=strBuilder+ar.toString();
-    }
-    if (bi!=-1){
-     strBuilder=strBuilder+br.toString();
-    }
-    if (ci!=-1){
-     strBuilder=strBuilder+cr.toString();
-    }
-    strBuilder=strBuilder+dr.toString();
-         
-        //create class using generated number
-        classify(i,strBuilder);
-        assignTip(i,strBuilder);        
-         strBuilder="";
-    }    
-}    
-    
-    
-function resetTips(){
-    
-    var numLinks = $("a").length;
-   // variable needed for quaternary
-    var d=0.0;
-    var di = 0;
-    var dr = 0;
-    
-    var c=0.0;
-    var ci = 0;
-    var cr = 0;
-    
-    var b=0.0;
-    var bi = 0;
-    var br = 0;
-    
-    var a=0.0;
-    var ai = 0;
-    var ar = 0;
-    
-    var strBuilder = "";
-    for(i = 0;i< numLinks;i++){
-        //calculate quaternary for each link
-        d= i/4;
-        di =  Math.floor(d);
-        dr = (d- di)*4+1;
-        if (di==0){
-        ci=-1;bi=-1;ai=-1;        
-        }else{
-            c= di/4;
-            ci =  Math.floor(c);
-            cr = (c- ci)*4+1;
-            if(ci==0){
-                bi=-1;ai=-1;        
-            }else{
-                b= ci/4;
-                bi =  Math.floor(b);
-                br = (b- bi)*4+1;
-                if(bi==0){
-                ai=-1;
-                }else{
-                    a= bi/4;
-                    ai =  Math.floor(a);
-                    ar = (a- ai)*4+1;
-        
-                }
-        
-            }   
-    }
-    
-    if (ai!=-1){
-     strBuilder=strBuilder+ar.toString();
-    }
-    if (bi!=-1){
-     strBuilder=strBuilder+br.toString();
-    }
-    if (ci!=-1){
-     strBuilder=strBuilder+cr.toString();
-    }
-    strBuilder=strBuilder+dr.toString();
-         
-        //create class using generated number
-        Opentip.tips[i].setContent(strBuilder);
-               
-         strBuilder="";
-    }    
-}        
-    
+}   
 
-    
- function translate(key){
-    switch(key){
+function translateKeyboardToValue(key){
+    switch(key){//modify to accept configuration input
     
             case 49:
             return 1;
@@ -189,45 +127,109 @@ function resetTips(){
             
             case 52:
             return 4;
+            case 53:
+            return 5;
             default:
             return "";    
     }    
 }      
+
+
+
+function isElementInViewport (el) {
+    //http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
     
+    // if (typeof el === "undefined"){
+    //     return false;
+    // }
+    if (typeof jQuery === "function" && el instanceof jQuery) {
+        el = el[0];
+    }
+
+    var rect = el.getBoundingClientRect();
+
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+    );
+}
     
+function loadUserSettings(){
+chrome.storage.sync.get({
+    linkkeyTextColor:"rgba(0, 0, 0, 1)",
+linkkeyBorderColor:"rgba(0, 0, 0, 0.5)",
+linkkeyHighlightColor:"rgba(50,197,49, 0.99)",
+linkkeyBodyColor:"rgba(49, 124, 194, 0.58)"
+  }, function(items) {
+    
+    linkkey_text_color = items.linkkeyTextColor;
+linkkey_border_color= items.linkkeyBorderColor;
+linkkey_body_color= items.linkkeyBodyColor;
+linkkey_highlight_color= items.linkkeyHighlightColor;
+  });
+
+}
+
+
+//Main    
 $(document).ready(function(){
    //stuff
+    var el;
     var input ="";
-    var linking = 0;
-        
+    var areTipsVisible = false;
+    var isActivated = false;
+    Opentip.lastZIndex =100000;
+    loadUserSettings();
     //Event handlers
-    $("body").keydown(function(event){    
-        if(event.which==192){          
-            linking=1;
-            for(var i = 0; i < Opentip.tips.length; i ++) { Opentip.tips[i].show();}
-    }      
-    });
     
+    //Is activation key PRESSED
+    $("body").keydown(function(event){ 
+
+    //set up new numbers for viewport   
+        if(event.which==192){// Set to ~ Key 
+            if (!areTipsVisible){
+                console.debug("Linkkey activated");         
+                prepLinksBased();
+               // for(var i = 0; i < Opentip.tips.length; i++) {//go tru opentip elements who are associated with an elem
+                 //   Opentip.tips[i].show();
+                //}
+            
+            areTipsVisible=true;
+            }
+
+        }         
+    });
+    //Is activation key RELEASED
     $("body").keyup(function(event){
-        $("#divtip").text(event.which);
-        if(event.which==192){         
-       for(var i = 0; i < Opentip.tips.length; i ++) {Opentip.tips[i].hide();}       
-        linking=0;       
-            linkkeyClick(input);
-        input="";
-               //resetTips(); 
-            resetTips();
-        }      
+        
+        if(event.which==192){
+            areTipsVisible=false;         
+   console.debug("Linkkey released"); 
+            if(input!=""){
+                linkkeyClickE(el);            
+            }     
+            for(var i = 0; i < Opentip.tips.length; i ++) {Opentip.tips[i].hide();}  
+            while (Opentip.tips.length > 0) {Opentip.tips.shift().deactivate();}
+
+            input="";
+            
+        }     
     });
-  
+    
+    // are valid keys being pressed
     $("body").keypress(function(event){
-    if(linking==1 && event.which!=192 && event.which!=96){        
-        input+=translate(event.which);
-        //TODO: highlight keypresses
-            highlight(input);
+    if(areTipsVisible==true && event.which!=192 && event.which!=96){        
+        input+=translateKeyboardToValue(event.which);        
+            el = highlightCharactersInTipE(input);
     }      
     });
-   
-   prepLinks(); 
     
+          
+
+
+
+
+
 });
